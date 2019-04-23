@@ -1,0 +1,129 @@
+/**
+ * My commodity trading network
+ */
+
+namespace org.example.mynetwork
+
+enum ProductType{
+	o WHEAT
+  o RICE
+}
+
+enum ShipmentStatus{
+  	o INITIAL
+	  o NEW
+    o GENERATED
+    o VERIFIED
+    o APPROVED
+    o AVAILABLE
+    o REJECTED
+}
+
+
+asset Product identified by productId{
+	  o String productId
+    o ProductType type
+    o Double quantity
+    --> supplyChainMember owner
+}
+
+asset Shipment identified by shipmentId {
+  o String shipmentId
+  o String trackingNumber
+  o String message optional
+  o ShipmentStatus status
+  --> supplyChainMember owner
+  --> supplyChainMember holder //IN POSSESSION OF ...
+  --> OrderContract contract
+  --> Product productExchanged
+}
+
+asset OrderContract identified by orderId {
+  o String orderId
+  --> supplyChainMember buyer
+  --> supplyChainMember seller
+  o Boolean payOnArrival
+  o DateTime arrivalDateTime
+  o Double paymentPrice
+}
+
+concept Address{
+	o String city optional
+  o String state
+  o String country default = 'IN'
+  o String street optional
+	o String zip optional
+}
+
+abstract participant supplyChainMember identified by ID{
+  	o String ID
+  	o String firstName
+  	o String lastName
+    o String email
+    //o Address address
+    o Double accountBalance
+}
+participant Farmer extends supplyChainMember {
+  
+}
+  
+participant APMC  extends supplyChainMember {
+    
+}
+
+participant EntryOperator  extends supplyChainMember {
+    
+}
+
+participant AssyingOperator  extends supplyChainMember {
+    
+}
+
+participant SalesOperator  extends supplyChainMember {
+    
+}
+
+transaction createProduct{
+	o ProductType type
+ 	o Double quantity
+  	--> Farmer farmer
+}
+  
+transaction sendProductDetails{
+	--> Product product
+  	--> Farmer farmer
+  	--> APMC apmc
+  	o DateTime arrivalDateTime default = '2019-04-18T19:19:33.623Z'
+  	o String shipmentId
+	  o String trackingNumber
+  	o ShipmentStatus status default = 'INITIAL'
+  	o String orderId
+   	o Boolean payOnArrival
+	o Double paymentPrice
+}
+  
+transaction sendForEntry{
+	--> Shipment shipment
+  	--> EntryOperator entryOperator
+}
+  
+transaction generateEntry{
+	-->Shipment shipment
+  	-->AssyingOperator assayOperator
+}  
+  
+transaction assayProduct{
+	-->Shipment shipment
+  	-->SalesOperator salesOperator
+}
+
+transaction salesApproval{
+	-->Shipment shipment
+  -->APMC apmc
+}
+  
+transaction publishTransaction{
+	-->Shipment shipment
+}
+
+
